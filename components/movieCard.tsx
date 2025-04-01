@@ -34,11 +34,6 @@ const MovieCard = ({
 					<Text className="text-xs text-light-300 font-medium mt-1">
 						{release_date?.split("-")[0]}
 					</Text>
-					<Text>
-						{/* <Text className="text-xs font-medium text-light-300 uppercase">
-							Movie
-						</Text> */}
-					</Text>
 				</View>
 			</TouchableOpacity>
 		</Link>
