@@ -11,24 +11,31 @@ import {
 } from "react-native";
 import { images } from "@/constants/images";
 import { icons } from "@/constants/icons";
-import { login } from "@/services/appwrite";
+import { register } from "@/services/appwrite";
 
-export default function Index() {
-	const [email, setEmail] = useState("vigu.george@gmail.com");
-	const [password, setPassword] = useState("12345678");
+export default function Register() {
+	const [email, setEmail] = useState("");
+	const [password, setPassword] = useState("");
+	const [confirmPassword, setConfirmPassword] = useState("");
 	const router = useRouter();
 
-	async function handleLogin() {
-		if (!email || !password) {
-			Alert.alert("Error", "Please enter both email and password.");
+	async function handleRegister() {
+		if (!email || !password || !confirmPassword) {
+			Alert.alert("Error", "Please fill out all fields.");
 			return;
 		}
 
-		try {
-			await login(email, password);
-			router.replace("/(tabs)"); // Navigate to your main app screen
-		} catch (err: any) {
-			Alert.alert("Login failed", err.message || "Please try again.");
+		if (password !== confirmPassword) {
+			Alert.alert("Error", "Passwords do not match.");
+			return;
+		}
+
+		const user = await register(email, password);
+
+		if (user) {
+			router.push("/(tabs)"); 
+		} else {
+			Alert.alert("Error", "Registration failed. Please try again.");
 		}
 	}
 
@@ -41,9 +48,9 @@ export default function Index() {
 				contentContainerStyle={{ minHeight: "100%", paddingBottom: 10 }}
 			>
 				<Image source={icons.logo} className="w-12 h-10 mt-20 mb-5 mx-auto" />
-				<Text className="text-white text-5xl mt-10">Welcome back 👋</Text>
+				<Text className="text-white text-5xl mt-10">Create Account</Text>
 				<Text className="text-[#a8b5db] mt-5">
-					Sign in to start watching your favourite movies.
+					Register to start watching your favourite movies.
 				</Text>
 				<View className="flex-row items-center bg-white rounded-2xl mt-10 px-4 py-3">
 					<TextInput
@@ -67,18 +74,30 @@ export default function Index() {
 						className="flex-1 ml-2 text-gray-500"
 					/>
 				</View>
+				<View className="flex-row items-center bg-white rounded-2xl mt-5 px-4 py-3">
+					<TextInput
+						placeholder="Confirm Password"
+						secureTextEntry
+						autoCapitalize="none"
+						value={confirmPassword}
+						onChangeText={setConfirmPassword}
+						placeholderTextColor="#8897ad"
+						className="flex-1 ml-2 text-gray-500"
+					/>
+				</View>
 
 				<TouchableOpacity
 					className="flex-row justify-center bg-[#162d3a] rounded-2xl mt-5 px-4 py-5"
-					onPress={handleLogin}
+					onPress={handleRegister}
 				>
-					<Text className="text-white">Sign in</Text>
+					<Text className="text-white">Register</Text>
 				</TouchableOpacity>
+
 				<View className="flex-row justify-end mt-3">
-					<TouchableOpacity onPress={() => router.push("/register")}>
+					<TouchableOpacity onPress={() => router.push("/")}>
 						<Text className="text-[#313957]">
-							Don't have an account?
-							<Text className="text-[#1E4AE9]"> Register here</Text>
+							Already have an account?
+							<Text className="text-[#1E4AE9]"> Sign in</Text>
 						</Text>
 					</TouchableOpacity>
 				</View>

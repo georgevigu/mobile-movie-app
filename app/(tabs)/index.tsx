@@ -7,17 +7,22 @@ import {
 	ScrollView,
 	ActivityIndicator,
 	FlatList,
+	TouchableOpacity,
 } from "react-native";
-import SearchBar from "@/components/searchBar";
 import TrendingCard from "@/components/trendingCard";
 import { useRouter } from "expo-router";
 import useFetch from "../../services/useFetch";
 import { fetchMovies } from "../../services/api";
 import MovieCard from "@/components/movieCard";
 import { getTrendingMovies } from "@/services/appwrite";
+import { genres } from "@/constants/genres";
+import { useState } from "react";
 
 export default function Index() {
 	const router = useRouter();
+	const [selectedGenre, setSelectedGenre] = useState<number | undefined>(
+		undefined
+	);
 
 	const {
 		data: trendingMovies,
@@ -29,13 +34,21 @@ export default function Index() {
 		data: movies,
 		loading: moviesLoading,
 		error: moviesError,
-	} = useFetch(() => fetchMovies({ query: "" }));
+		refetch: refetchMovies,
+	} = useFetch(() => fetchMovies({ query: "", genreId: selectedGenre }));
+
+	const handleGenrePress = async (genreId: number) => {
+		const newSelectedGenre = selectedGenre === genreId ? undefined : genreId;
+		setSelectedGenre(newSelectedGenre);
+		// Refetch movies when genre changes
+		await refetchMovies();
+	};
 
 	return (
 		<View className="flex-1 bg-primary">
 			<Image source={images.bg} className="absolute w-full z-0" />
 			<ScrollView
-				className="flex-1 px-5"
+				className="flex-1 px-5 py-5"
 				showsVerticalScrollIndicator={false}
 				contentContainerStyle={{ minHeight: "100%", paddingBottom: 10 }}
 			>
@@ -51,15 +64,9 @@ export default function Index() {
 					<Text>Error: {moviesError?.message || trendingError?.message}</Text>
 				) : (
 					<View className="flex-1 mt-5">
-						<SearchBar
-							onPress={() => router.push("/search")}
-							placeholder="Search for a movie"
-							value=""
-							onChangeText={() => {}}
-						/>
 						{trendingMovies && (
-							<View className="mt-10">
-								<Text className="text-lg text-white font-bold mb-3">
+							<View className="mt-5">
+								<Text className="text-2xl text-white font-bold mb-3">
 									Trending Movies
 								</Text>
 								<FlatList
@@ -76,8 +83,34 @@ export default function Index() {
 							</View>
 						)}
 						<>
-							<Text className="text-lg text-white font-bold mt-5 mb-3">
-								Latest Movies
+							<FlatList
+								data={genres}
+								horizontal
+								showsHorizontalScrollIndicator={false}
+								keyExtractor={(item) => item.id.toString()}
+								ItemSeparatorComponent={() => <View className="w-2" />}
+								className="mt-2"
+								renderItem={({ item }) => (
+									<TouchableOpacity
+										onPress={() => handleGenrePress(item.id)}
+										className={`border px-4 py-2 rounded-full ${
+											selectedGenre === item.id
+												? "bg-[#AB8BFF] border-[#AB8BFF]"
+												: "bg-white/20 border-white/30"
+										}`}
+									>
+										<Text className={`font-medium text-sm text-white`}>
+											{item.name}
+										</Text>
+									</TouchableOpacity>
+								)}
+								contentContainerStyle={{ paddingVertical: 8 }}
+							/>
+
+							<Text className="text-2xl text-white font-bold mt-5 mb-3">
+								{selectedGenre
+									? `${genres.find((g) => g.id === selectedGenre)?.name} Movies`
+									: "Latest Movies"}
 							</Text>
 
 							<FlatList
